@@ -383,7 +383,23 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}
+var APP_VERSION="3";
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
+var lastCheck=0;
+function checkVersion(){
+  var now=Date.now(); if(now-lastCheck<30000)return; lastCheck=now;
+  fetch("version.txt?t="+now,{cache:"no-store"}).then(function(r){return r.ok?r.text():null}).then(function(t){
+    if(!t)return; t=t.trim(); if(!t||t===APP_VERSION)return;
+    var tried=null; try{tried=sessionStorage.getItem("upd")}catch(e){}
+    if(tried===t)return;
+    try{sessionStorage.setItem("upd",t)}catch(e){}
+    var a=document.activeElement; if(a&&a.tagName==="INPUT")a.blur();
+    setTimeout(function(){location.reload()},300);
+  }).catch(function(){});
+}
+checkVersion();
+document.addEventListener("visibilitychange",function(){if(!document.hidden)checkVersion()});
+window.addEventListener("pageshow",checkVersion);
 </script>
 </body>
 </html>
