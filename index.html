@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10161c" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Добавки">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Приём добавок и замеры</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: one phone-width column, two tabs (day checklist / measurements grid), time-of-day groups as flat lists. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#16202b; --muted:#647282; --line:#d9dfe6;
+  --accent:#0f6b6f; --accent-soft:#dcefee; --done:#2c8a52; --warn:#b4541a;
+  --f-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --f-body:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#10161c; --surface:#19222b; --ink:#e8edf2; --muted:#93a1b0; --line:#2a3642;
+    --accent:#4fc1c0; --accent-soft:#17383a; --done:#5ccf88; --warn:#f0a36a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#10161c; --surface:#19222b; --ink:#e8edf2; --muted:#93a1b0; --line:#2a3642;
+  --accent:#4fc1c0; --accent-soft:#17383a; --done:#5ccf88; --warn:#f0a36a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding:12px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.tabs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;background:var(--line);padding:4px;border-radius:12px}
+.tabs button{border:0;background:transparent;padding:9px 8px;border-radius:9px;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink)}
+.status{font-size:13px;color:var(--muted);min-height:18px;text-align:center}
+.status.err{color:var(--warn)}
+h1{font-family:var(--f-display);font-size:19px;font-weight:600;margin:0;text-wrap:balance}
+.datebar{display:flex;align-items:center;gap:8px}
+.datebar h1{flex:1;text-align:center}
+.nav{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-size:18px;flex:none}
+.today-link{border:0;background:none;color:var(--accent);font-size:14px;padding:2px 6px;align-self:center}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.week button{border:1px solid transparent;background:transparent;border-radius:10px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px}
+.week .wd{font-size:11px;color:var(--muted);text-transform:uppercase}
+.week .dn{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.week .dot{width:6px;height:6px;border-radius:50%;background:var(--line)}
+.week .dot.part{background:var(--warn)}
+.week .dot.full{background:var(--done)}
+.week button.sel{background:var(--surface);border-color:var(--line)}
+.week button.now .dn{color:var(--accent)}
+.summary{background:var(--surface);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.sumrow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.sumrow b{font-family:var(--f-display);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--done);border-radius:4px;transition:width .2s}
+@media (prefers-reduced-motion: reduce){.bar i{transition:none}}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding-top:10px}
+.switch button{width:52px;height:30px;border-radius:15px;border:0;background:var(--line);position:relative;flex:none}
+.switch button::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.switch button[aria-checked="true"]{background:var(--accent)}
+.switch button[aria-checked="true"]::after{left:25px}
+.group h2{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 4px 6px}
+.list{background:var(--surface);border-radius:14px;overflow:hidden}
+.item{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.check{width:30px;height:30px;border-radius:9px;border:2px solid var(--muted);background:transparent;flex:none;display:grid;place-items:center;padding:0}
+.check svg{width:16px;height:16px;opacity:0}
+.item.on .check{background:var(--done);border-color:var(--done)}
+.item.on .check svg{opacity:1}
+.label{flex:1;min-width:0;border:0;background:none;text-align:left;padding:0}
+.label .nm{display:block;font-weight:500}
+.item.on .label .nm{color:var(--muted);text-decoration:line-through}
+.label .nt{display:block;font-size:13px;color:var(--muted)}
+.amt{width:104px;flex:none;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:7px 8px;text-align:center;font-size:15px}
+.info{background:var(--surface);border-radius:14px;padding:4px 14px}
+.info div{padding:10px 0;border-top:1px solid var(--line)}
+.info div:first-child{border-top:0}
+.info b{display:block;font-weight:600}
+.info span{display:block;font-size:14px;color:var(--muted)}
+.info em{display:block;font-style:normal;font-size:14px;color:var(--accent);margin-top:2px}
+.more{flex:0 0 100%;padding-left:40px;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.more p{margin:0}
+.more q{display:block;quotes:none;border-left:3px solid var(--accent);padding-left:8px;color:var(--muted)}
+.more q b{color:var(--accent);font-weight:600}
+.label .tg{display:block;font-size:13px;color:var(--accent);margin-top:1px}
+.desc{font-size:14px;color:var(--muted);margin:0 4px 8px}
+.foot{font-size:14px;margin:8px 4px 0;padding:10px 12px;border-radius:12px;background:var(--accent-soft)}
+.hint{font-size:13px;color:var(--muted);margin:0 4px}
+.tablewrap{overflow-x:auto;background:var(--surface);border-radius:14px;-webkit-overflow-scrolling:touch}
+table{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:0}
+th{font-weight:500;font-size:13px;padding:8px 6px;white-space:nowrap;background:var(--surface)}
+thead th.cur{color:var(--accent);font-weight:600}
+tbody th{position:sticky;left:0;z-index:1;text-align:left;white-space:normal;width:132px;min-width:132px;max-width:132px;padding:8px 10px;font-size:14px}
+tbody th small{display:block;color:var(--muted);font-size:12px;font-weight:400}
+thead th:first-child{position:sticky;left:0;z-index:2;text-align:left;padding-left:10px}
+td input{width:62px;border:0;background:transparent;padding:10px 4px;text-align:center;font-size:15px}
+td.cur{background:var(--accent-soft)}
+tr:last-child th,tr:last-child td{border-bottom:0}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:500;align-self:flex-start}
+.loading .item,.loading .switch,.loading td{opacity:.55;pointer-events:none}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="app loading" id="app">
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-day" aria-selected="true">Приём</button>
+    <button role="tab" id="tab-meas" aria-selected="false">Замеры</button>
+    <button role="tab" id="tab-info" aria-selected="false">Памятка</button>
+  </div>
+  <div class="status" id="status">Загружаю отметки…</div>
+  <div id="view-day"></div>
+  <div id="view-meas" hidden></div>
+  <div id="view-info" hidden></div>
+</div>
+<script>
+"use strict";
+var Q_BAD="Рекомендации по бадам: omega 3, магний б6, D3, глюкозамин Хондроитин";
+var Q_PRE="Перед тренировкой (цитруллин 5 гр + аргинин 5гр + бета аланин 5гр)";
+var PLAN=[
+ {title:"Утро, с завтраком",desc:"Всё из этого блока пьётся во время завтрака или сразу после него. Порошки размешайте в стакане воды.",items:[
+  {id:"omega",name:"Омега-3",amt:"2 капс",note:"во время еды",coach:Q_BAD,
+   how:"Обе капсулы за один раз, запить водой. С едой усваивается лучше и нет рыбной отрыжки."},
+  {id:"d3",name:"Витамин D3",amt:"1 капс",note:"600 МЕ, с едой",coach:Q_BAD,
+   how:"1 капсула с завтраком, в котором есть жир: яйца, масло, сыр. Без жира D3 усваивается хуже."},
+  {id:"gluco1",name:"Глюкозамин + хондроитин",amt:"2 капс",note:"первый приём из двух",coach:Q_BAD,
+   how:"2 капсулы утром и ещё 2 вечером, всего 4 в день. Только во время еды. Курс 1–2 месяца, двух банок хватит на два."},
+  {id:"creatine",name:"Креатин",amt:"5 г",note:"каждый день, и без тренировки тоже",coach:"Креатин моногидрат (5 гр в день)",
+   how:"Примерно 1 мерная ложка из банки на стакан воды или сока. Время не важно, важна регулярность. В день с 1 порцией гейнера берите 2,5 г, с 2 порциями отдельный креатин не нужен: в гейнере он уже есть. За день пейте больше воды."},
+  {id:"beta1",name:"Бета-аланин",amt:"2,5 г",note:"первая половина дневных 5 г",coach:Q_PRE,
+   how:"Порция на банке 2 г, значит нужна порция с небольшой горкой. Размешать в воде. Тренер писал 5 г перед тренировкой, но бета-аланин работает за счёт накопления, поэтому те же 5 г разбиты на два приёма каждый день. Покалывание кожи через 15–20 минут безвредно."}
+ ]},
+ {title:"Днём",desc:"Протеин и гейнер нужны только в те дни, когда не добираете белок или калории обычной едой.",items:[
+  {id:"beta2",name:"Бета-аланин",amt:"2,5 г",note:"вторая половина",coach:Q_PRE,
+   how:"Так же, как утром. В день тренировки удобно выпить вместе с цитруллином и аргинином за час до зала."},
+  {id:"prot1",name:"Протеин",amt:"30 г",note:"если не хватает белка из еды",opt:true,coach:"В качестве добора белка, сывороточный протеин (не больше 2 порций в день)",
+   how:"30 г, это 2 мерные ложки, на 250–300 мл воды или молока, взболтать в шейкере. В порции 22 г белка. Пить между приёмами пищи или в течение пары часов после тренировки."},
+  {id:"prot2",name:"Протеин, вторая порция",amt:"30 г",note:"не больше 2 в день",opt:true,
+   how:"Только если и после первой порции белка за день мало. Не вместо еды, а в дополнение к ней."},
+  {id:"gain1",name:"Гейнер",amt:"100 г",note:"если не хватает калорий",opt:true,coach:"В качестве добора углеводов, гейнер (не больше 2 порций в день)",
+   how:"100 г, это 2 мерные ложки, на 300–400 мл воды или молока. В порции 377 ккал, 70 г углеводов, 20 г белка и 2,64 г креатина. Удобнее всего после тренировки или между едой."},
+  {id:"gain2",name:"Гейнер, вторая порция",amt:"100 г",note:"не больше 2 в день",opt:true,
+   how:"Если вес не растёт. Если начал прибавляться жир, вернитесь к одной порции или уберите гейнер, протеин оставьте."}
+ ]},
+ {title:"За час до тренировки",train:true,desc:"Оба порошка можно размешать в одном стакане воды и выпить за 45–60 минут до начала.",
+  foot:"Во время тренировки. Тренер: «Во время тренировки bcaa». Отдельные BCAA не куплены: они уже есть в протеине и гейнере. На тренировке просто пейте воду.",items:[
+  {id:"citr",name:"Цитруллин малат",amt:"7,5 г",note:"от 5 до 7,5 г порошка",coach:Q_PRE,
+   how:"Порция на банке 5 г, это и есть доза тренера. В 5 г малата чистого цитруллина около 3,3 г, поэтому для заметного эффекта стоит 1,5 порции. Можно начать с 5 г и посмотреть на самочувствие. Вкус кислый."},
+  {id:"aakg",name:"Аргинин (AAKG)",amt:"7,5 г",note:"это около 5 г аргинина",coach:Q_PRE,
+   how:"В AAKG чистого аргинина около двух третей, поэтому 5 г аргинина от тренера это примерно 7,5 г порошка. Сколько граммов в мерной ложке, проверьте на банке. Если на голодный желудок подташнивает, выпейте после лёгкого перекуса."}
+ ]},
+ {title:"Вечер, с ужином",desc:"Оба пункта во время ужина или сразу после него.",items:[
+  {id:"gluco2",name:"Глюкозамин + хондроитин",amt:"2 капс",note:"второй приём из двух",coach:Q_BAD,
+   how:"Вторые 2 капсулы за день, во время еды."},
+  {id:"mg",name:"Магний B6",amt:"2 капс",note:"можно до 4, если переносится",coach:Q_BAD,
+   how:"Начните с 2 капсул, это 200 мг магния. Вечером, потому что магний расслабляет и помогает уснуть. Если стул в норме, через неделю можно поднять до 3–4 капсул."}
+ ]}
+];
+var ROWS=[
+ ["weight","Вес","кг"],["waist","Талия","самая узкая часть, см"],["belly","Живот","по линии пупка, см"],
+ ["hips","Бедра","самая широкая часть, см"],["leg","Нога","самая широкая часть, см"],["calf","Голень","см"],
+ ["chest","Грудь","по линии соска, см"],["shoulders","Плечи","по самой выступающей части, см"],["arm","Рука","по центру бицепса, см"]
+];
+var WD=["вс","пн","вт","ср","чт","пт","сб"];
+var WDF=["воскресенье","понедельник","вторник","среда","четверг","пятница","суббота"];
+var MON=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+function pad(n){return n<10?"0"+n:""+n}
+function key(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+function parse(k){var p=k.split("-");return new Date(+p[0],+p[1]-1,+p[2])}
+function addDays(d,n){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);return x}
+function defaultDates(){var out=[],d=new Date(2026,10,15);for(var i=0;i<9;i++){out.push(key(addDays(d,i*7)))}return out}
+
+var days={};            // key -> {train:bool, t:{id:true}, a:{id:"amount"}}
+var meas={dates:defaultDates(),v:{}};
+var cur=new Date(); cur=new Date(cur.getFullYear(),cur.getMonth(),cur.getDate());
+var db=null, loaded=false, local=false;
+var LS="supplements-app-v1";
+
+function day(k){ if(!days[k]) days[k]={train:false,t:{},a:{}}; var d=days[k]; if(!d.t)d.t={}; if(!d.a)d.a={}; return d }
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function setStatus(t,err){var s=document.getElementById("status");s.textContent=t;s.className="status"+(err?" err":"")}
+
+/* saving: one write at a time per document */
+var openIds={};
+var savers={};
+function save(name,refFn,dataFn){
+  if(local){ try{localStorage.setItem(LS,JSON.stringify({days:days,meas:meas}))}catch(e){} return }
+  if(!db) return;
+  var s=savers[name]||(savers[name]={dirty:false,busy:false});
+  s.dirty=true;
+  if(s.busy) return;
+  s.busy=true;
+  (async function(){
+    while(s.dirty){
+      s.dirty=false;
+      try{ await refFn().set(clone(dataFn())); setStatus("Сохранено") }
+      catch(e){
+        if(e&&e.code==="invalid_argument"){ local=true; try{localStorage.setItem(LS,JSON.stringify({days:days,meas:meas}))}catch(x){} setStatus("Отметки хранятся только на этом устройстве"); break }
+        setStatus("Не удалось сохранить. Проверьте интернет и отметьте ещё раз.",true); break }
+    }
+    s.busy=false;
+  })();
+}
+function saveDay(k){ save("d"+k,function(){return db.doc("days/"+k)},function(){return day(k)}) }
+function saveMeas(){ save("meas",function(){return db.doc("meas/table")},function(){return meas}) }
+
+function h(tag,attrs,kids){
+  var e=document.createElement(tag);
+  for(var a in attrs||{}){ if(a==="text")e.textContent=attrs[a]; else if(a.slice(0,2)==="on")e.addEventListener(a.slice(2),attrs[a]); else if(attrs[a]!==false&&attrs[a]!=null)e.setAttribute(a,attrs[a]) }
+  (kids||[]).forEach(function(k){if(k)e.appendChild(k)});
+  return e;
+}
+function stats(k){
+  var d=days[k]||{train:false,t:{}}, need=0, got=0;
+  PLAN.forEach(function(g){ if(g.train&&!d.train)return; g.items.forEach(function(it){ if(it.opt)return; need++; if(d.t&&d.t[it.id])got++ }) });
+  return {need:need,got:got};
+}
+var CHECK='<svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>';
+
+function renderDay(){
+  var root=document.getElementById("view-day"); root.textContent="";
+  var k=key(cur), d=day(k), todayK=key(new Date());
+  var title=(k===todayK?"Сегодня, ":"")+WDF[cur.getDay()]+" "+cur.getDate()+" "+MON[cur.getMonth()];
+  title=title.charAt(0).toUpperCase()+title.slice(1);
+  var wrap=h("div",{style:"display:flex;flex-direction:column;gap:14px"});
+  wrap.appendChild(h("div",{class:"datebar"},[
+    h("button",{class:"nav","aria-label":"Предыдущий день",text:"‹",onclick:function(){cur=addDays(cur,-1);renderDay()}}),
+    h("h1",{text:title}),
+    h("button",{class:"nav","aria-label":"Следующий день",text:"›",onclick:function(){cur=addDays(cur,1);renderDay()}})
+  ]));
+  var monday=addDays(cur,-((cur.getDay()+6)%7)), week=h("div",{class:"week"});
+  for(var i=0;i<7;i++){(function(dt){
+    var kk=key(dt), st=stats(kk), cls=(kk===k?"sel ":"")+(kk===todayK?"now":"");
+    var dot=st.got===0?"dot":(st.got>=st.need?"dot full":"dot part");
+    week.appendChild(h("button",{class:cls,"aria-label":dt.getDate()+" "+MON[dt.getMonth()],onclick:function(){cur=dt;renderDay()}},[
+      h("span",{class:"wd",text:WD[dt.getDay()]}),h("span",{class:"dn",text:dt.getDate()}),h("span",{class:dot})]));
+  })(addDays(monday,i))}
+  wrap.appendChild(week);
+  if(k!==todayK) wrap.appendChild(h("button",{class:"today-link",text:"Вернуться к сегодня",onclick:function(){var n=new Date();cur=new Date(n.getFullYear(),n.getMonth(),n.getDate());renderDay()}}));
+
+  var st=stats(k);
+  wrap.appendChild(h("div",{class:"summary"},[
+    h("div",{class:"sumrow"},[h("span",{text:"Принято из обязательного"}),h("b",{text:st.got+" из "+st.need})]),
+    h("div",{class:"bar"},[h("i",{style:"width:"+(st.need?Math.round(st.got/st.need*100):0)+"%"})]),
+    h("div",{class:"switch"},[h("span",{id:"train-label",text:"В этот день тренировка"}),
+      h("button",{role:"switch","aria-checked":d.train?"true":"false","aria-labelledby":"train-label",onclick:function(){d.train=!d.train;saveDay(k);renderDay()}})])
+  ]));
+
+  PLAN.forEach(function(g){
+    if(g.train&&!d.train) return;
+    var list=h("div",{class:"list"});
+    g.items.forEach(function(it){
+      var on=!!d.t[it.id];
+      function toggle(){ if(d.t[it.id])delete d.t[it.id]; else d.t[it.id]=true; saveDay(k); renderDay() }
+      var cb=h("button",{class:"check",role:"checkbox","aria-checked":on?"true":"false","aria-label":it.name,onclick:toggle}); cb.innerHTML=CHECK;
+      var inp=h("input",{class:"amt",id:"amt-"+it.id,type:"text","aria-label":"Количество: "+it.name,autocomplete:"off"});
+      inp.value=d.a[it.id]!=null?d.a[it.id]:it.amt;
+      inp.addEventListener("change",function(){var v=inp.value.trim(); if(!v||v===it.amt){delete d.a[it.id];inp.value=it.amt}else d.a[it.id]=v; saveDay(k)});
+      list.appendChild(h("div",{class:"item"+(on?" on":"")},[cb,
+        h("button",{class:"label","aria-expanded":openIds[it.id]?"true":"false","aria-controls":"more-"+it.id,onclick:function(){openIds[it.id]=!openIds[it.id];renderDay()}},[h("span",{class:"nm",text:it.name}),h("span",{class:"nt",text:(it.opt?"По желанию: ":"")+it.note}),h("span",{class:"tg",text:openIds[it.id]?"Скрыть":"Как принимать"})]),inp,
+        h("div",{class:"more",id:"more-"+it.id,hidden:openIds[it.id]?null:""},[h("p",{text:it.how}), it.coach?(function(){var q=h("q");q.appendChild(h("b",{text:"Тренер: "}));q.appendChild(document.createTextNode("«"+it.coach+"»"));return q})():null])]));
+    });
+    wrap.appendChild(h("section",{class:"group"},[h("h2",{text:g.title}),g.desc?h("p",{class:"desc",text:g.desc}):null,list,g.foot?h("p",{class:"foot",text:g.foot}):null]));
+  });
+  wrap.appendChild(h("p",{class:"hint",text:"Квадрат слева отмечает приём. Нажатие на название открывает, как принимать. В поле справа можно вписать, сколько приняли на самом деле."}));
+  root.appendChild(wrap);
+}
+
+function curCol(){ var t=key(new Date()), best=null; meas.dates.forEach(function(x){ if(x<=t) best=x }); return best||meas.dates[0] }
+function renderMeas(){
+  var root=document.getElementById("view-meas"); root.textContent="";
+  var cc=curCol();
+  var hr=h("tr",{},[h("th",{text:"Параметр"})]);
+  meas.dates.forEach(function(dk){var p=parse(dk);hr.appendChild(h("th",{class:dk===cc?"cur":"",text:pad(p.getDate())+"."+pad(p.getMonth()+1)}))});
+  var tb=h("tbody");
+  ROWS.forEach(function(r){
+    var th=h("th",{scope:"row"}); th.appendChild(document.createTextNode(r[1])); th.appendChild(h("small",{text:r[2]}));
+    var tr=h("tr",{},[th]);
+    meas.dates.forEach(function(dk){
+      var inp=h("input",{type:"text",inputmode:"decimal",id:"m-"+r[0]+"-"+dk,"aria-label":r[1]+", "+dk,autocomplete:"off"});
+      inp.value=(meas.v[dk]&&meas.v[dk][r[0]])||"";
+      inp.addEventListener("change",function(){var v=inp.value.trim(); if(!meas.v[dk])meas.v[dk]={}; if(v)meas.v[dk][r[0]]=v; else delete meas.v[dk][r[0]]; saveMeas()});
+      tr.appendChild(h("td",{class:dk===cc?"cur":""},[inp]));
+    });
+    tb.appendChild(tr);
+  });
+  var tw=h("div",{class:"tablewrap"},[h("table",{},[h("thead",{},[hr]),tb])]);
+  var wrap=h("div",{style:"display:flex;flex-direction:column;gap:14px"},[
+    h("h1",{text:"Замеры по воскресеньям"}),
+    h("p",{class:"hint",text:"Вес в килограммах, остальное в сантиметрах. Выделен столбец последнего воскресенья."}),
+    tw,
+    h("button",{class:"btn",text:"Добавить следующее воскресенье",onclick:function(){var last=parse(meas.dates[meas.dates.length-1]);meas.dates.push(key(addDays(last,7)));saveMeas();renderMeas();var w=document.querySelector(".tablewrap");w.scrollLeft=w.scrollWidth}})
+  ]);
+  root.appendChild(wrap);
+  var idx=meas.dates.indexOf(cc); if(idx>1) tw.scrollLeft=(idx-1)*63;
+}
+
+var COACH=[
+ ["Сывороточный протеин","Добор белка, не больше 2 порций в день"],
+ ["Гейнер","Добор углеводов, не больше 2 порций в день"],
+ ["Креатин моногидрат","5 г в день"],
+ ["BCAA","Во время тренировки"],
+ ["Перед тренировкой","Цитруллин 5 г + аргинин 5 г + бета-аланин 5 г"],
+ ["БАДы","Омега-3, магний B6, D3, глюкозамин хондроитин"]
+];
+var GUIDE=[
+ ["Протеин","Быстрый белок для восстановления и роста мышц. Нужен, только если не добираете белок едой.","Порция 30 г на 250–300 мл воды или молока, между едой или после тренировки."],
+ ["Гейнер","Углеводы с белком, дополнительные калории для набора массы.","Порция 100 г на 300–400 мл. В порции уже есть 2,64 г креатина."],
+ ["Креатин","Запас энергии для коротких мощных усилий: растут сила и число повторений.","Каждый день, время не важно. Пейте больше воды."],
+ ["Цитруллин малат","Усиливает кровоток в мышцах и немного снижает усталость.","За час до тренировки, только в тренировочные дни."],
+ ["Аргинин (AAKG)","Работает на тот же эффект, что и цитруллин, но слабее.","За час до тренировки вместе с цитруллином."],
+ ["Бета-аланин","Повышает выносливость в тяжёлых подходах. Действует за счёт накопления.","Каждый день, 5 г в два приёма. Покалывание кожи безвредно."],
+ ["Омега-3","Сердце, сосуды, суставы.","2 капсулы в день во время еды."],
+ ["Магний B6","Нервная система, сон, меньше судорог.","Вечером с едой. Начните с 2 капсул."],
+ ["Витамин D3","Иммунитет, кости, гормональный фон. Важен осенью и зимой.","1 капсула в день с едой, где есть жир."],
+ ["Глюкозамин + хондроитин","Суставы и связки. Эффект, если будет, через 1–2 месяца.","По 2 капсулы 2 раза в день во время еды, курс 1–2 месяца."]
+];
+var DIFF=[
+ ["BCAA не куплены","Они уже есть в протеине и гейнере, отдельная банка почти ничего не добавит."],
+ ["Бета-аланин каждый день, а не только перед тренировкой","Так он накапливается и работает лучше. Те же 5 г, но в два приёма."],
+ ["Креатин меньше в дни с гейнером","В гейнере он уже есть: с 1 порцией добавляйте 2,5 г, с 2 порциями отдельно не нужен."],
+ ["Аргинина 7,5 г порошка","В AAKG чистого аргинина около двух третей, поэтому 7,5 г порошка дают примерно 5 г."]
+];
+function renderInfo(){
+  var root=document.getElementById("view-info"); root.textContent="";
+  function block(title,rows,three){
+    var box=h("div",{class:"info"});
+    rows.forEach(function(r){box.appendChild(h("div",{},[h("b",{text:r[0]}),h("span",{text:r[1]}),three?h("em",{text:r[2]}):null]))});
+    return h("section",{class:"group"},[h("h2",{text:title}),box]);
+  }
+  root.appendChild(h("div",{style:"display:flex;flex-direction:column;gap:14px"},[
+    h("h1",{text:"Памятка"}),
+    block("Что написал тренер",COACH),
+    block("Что в списке отличается и почему",DIFF),
+    block("Что для чего и как принимать",GUIDE,true),
+    h("p",{class:"hint",text:"Пояснения и отличия от списка тренера добавлены в чате с Claude, это не слова тренера. При проблемах с почками или приёме лекарств согласуйте набор с врачом."})
+  ]));
+}
+function showTab(name){
+  document.getElementById("tab-day").setAttribute("aria-selected",name==="day");
+  document.getElementById("tab-meas").setAttribute("aria-selected",name==="meas");
+  document.getElementById("view-day").hidden=name!=="day";
+  document.getElementById("view-meas").hidden=name!=="meas";
+  document.getElementById("tab-info").setAttribute("aria-selected",name==="info");
+  document.getElementById("view-info").hidden=name!=="info";
+  if(name==="meas")renderMeas(); else if(name==="info")renderInfo(); else renderDay();
+}
+document.getElementById("tab-day").addEventListener("click",function(){showTab("day")});
+document.getElementById("tab-meas").addEventListener("click",function(){showTab("meas")});
+document.getElementById("tab-info").addEventListener("click",function(){showTab("info")});
+
+function ready(msg,err){ loaded=true; document.getElementById("app").classList.remove("loading"); setStatus(msg,err); if(!document.getElementById("view-day").hidden)renderDay(); if(!document.getElementById("view-meas").hidden)renderMeas() }
+function useLocal(){
+  local=true;
+  try{var s=JSON.parse(localStorage.getItem(LS)||"null"); if(s){days=s.days||{}; if(s.meas&&s.meas.dates)meas=s.meas}}catch(e){}
+  ready("Отметки хранятся только на этом устройстве");
+}
+renderDay();
+(async function(){
+  var timer=setTimeout(function(){ if(!loaded) setStatus("Данные пока не загрузились. Проверьте интернет.",true) },10000);
+  try{
+    db=(window.claude&&window.claude.use)?await window.claude.use("db"):null;
+    var user=db?await window.claude.use("user"):null;
+    var owner=user?await user.isOwner():null;
+    if(!db||owner===false){ clearTimeout(timer); db=null; useLocal(); return }
+    var res=await Promise.all([db.collection("days").limit(1000).get(), db.doc("meas/table").get()]);
+    res[0].docs.forEach(function(s){ var x=s.data(); if(x) days[s.id]=clone(x) });
+    if(res[1].exists){ var m=clone(res[1].data()); if(m&&Array.isArray(m.dates)&&m.dates.length){ meas={dates:m.dates,v:m.v||{}} } }
+    clearTimeout(timer); ready("Отметки сохраняются автоматически");
+  }catch(e){ clearTimeout(timer); db=null; useLocal() }
+})();
+if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(function(){})}
+</script>
+</body>
+</html>
