@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#eef1f4" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#10161c" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,7 +34,7 @@
   --accent:#4fc1c0; --accent-soft:#17383a; --done:#5ccf88; --warn:#f0a36a; color-scheme:dark;
 }
 *{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;touch-action:pan-x pan-y}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.4;-webkit-text-size-adjust:100%}
 button,input{font:inherit;color:inherit}
 button{cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -82,7 +82,7 @@ h1{font-family:var(--f-display);font-size:19px;font-weight:600;margin:0;text-wra
 .label .nm{display:block;font-weight:500}
 .item.on .label .nm{color:var(--muted);text-decoration:line-through}
 .label .nt{display:block;font-size:13px;color:var(--muted)}
-.amt{width:104px;flex:none;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:7px 8px;text-align:center;font-size:15px}
+.amt{width:104px;flex:none;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:7px 6px;text-align:center;font-size:16px}
 .info{background:var(--surface);border-radius:14px;padding:4px 14px}
 .info div{padding:10px 0;border-top:1px solid var(--line)}
 .info div:first-child{border-top:0}
@@ -105,7 +105,7 @@ thead th.cur{color:var(--accent);font-weight:600}
 tbody th{position:sticky;left:0;z-index:1;text-align:left;white-space:normal;width:132px;min-width:132px;max-width:132px;padding:8px 10px;font-size:14px}
 tbody th small{display:block;color:var(--muted);font-size:12px;font-weight:400}
 thead th:first-child{position:sticky;left:0;z-index:2;text-align:left;padding-left:10px}
-td input{width:62px;border:0;background:transparent;padding:10px 4px;text-align:center;font-size:15px}
+td input{width:62px;border:0;background:transparent;padding:10px 4px;text-align:center;font-size:16px}
 td.cur{background:var(--accent-soft)}
 tr:last-child th,tr:last-child td{border-bottom:0}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:500;align-self:flex-start}
@@ -127,6 +127,7 @@ tr:last-child th,tr:last-child td{border-bottom:0}
 </div>
 <script>
 "use strict";
+["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
 var Q_BAD="Рекомендации по бадам: omega 3, магний б6, D3, глюкозамин Хондроитин";
 var Q_PRE="Перед тренировкой (цитруллин 5 гр + аргинин 5гр + бета аланин 5гр)";
 var PLAN=[
