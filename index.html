@@ -149,6 +149,8 @@ tbody th,thead th:first-child{background:var(--solid);border-right-width:2px}
 tr th:last-child,tr td:last-child{border-right:0}
 td.cur,thead th.cur{background:var(--accent-soft)}
 td input{font-weight:500}
+/* iOS home-screen app: the system blurs a strip under the clock, keep the tab bar below it */
+@supports (-webkit-touch-callout:none){@media (display-mode:standalone){.app{padding-top:38px}.tabs{top:38px}}}
 </style>
 </head>
 <body>
@@ -421,7 +423,7 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-var APP_VERSION="4";
+var APP_VERSION="5";
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
 var lastCheck=0;
 function checkVersion(){
