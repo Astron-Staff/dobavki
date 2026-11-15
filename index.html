@@ -158,6 +158,7 @@ td input{font-weight:500}
 .tabs button{padding:13px 8px;font-size:15px}
 .tabs{background:color-mix(in srgb,var(--solid) 62%,transparent);-webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%)}
 .app{padding-bottom:calc(104px + env(safe-area-inset-bottom,0px))}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px}
 </style>
 </head>
 <body>
@@ -327,6 +328,69 @@ function renderDay(){
   root.appendChild(wrap);
 }
 
+function measCanvas(){
+  var S=2,W0=250,CW=92,P=32,TH=84,HH=46,RH=58,n=meas.dates.length;
+  var w=P*2+W0+CW*n,h=P*2+TH+HH+RH*ROWS.length;
+  var c=document.createElement("canvas");c.width=w*S;c.height=h*S;
+  var g=c.getContext("2d");g.scale(S,S);
+  var F='"Golos Text",-apple-system,"Segoe UI",Roboto,sans-serif';
+  function full(k){var p=parse(k);return pad(p.getDate())+"."+pad(p.getMonth()+1)+"."+p.getFullYear()}
+  g.fillStyle="#ffffff";g.fillRect(0,0,w,h);
+  g.textBaseline="middle";g.textAlign="left";
+  g.fillStyle="#111111";g.font="600 26px "+F;g.fillText("Замеры по воскресеньям",P,P+18);
+  g.fillStyle="#555555";g.font="400 15px "+F;
+  g.fillText("Вес в кг, остальное в см. Период: "+full(meas.dates[0])+" – "+full(meas.dates[n-1]),P,P+52);
+  var x0=P,y0=P+TH,tw=W0+CW*n,th=HH+RH*ROWS.length;
+  g.fillStyle="#eef2f5";g.fillRect(x0,y0,tw,HH);g.fillRect(x0,y0,W0,th);
+  g.fillStyle="#111111";g.font="600 16px "+F;g.fillText("Параметр",x0+12,y0+HH/2);
+  g.textAlign="center";
+  meas.dates.forEach(function(dk,i){var p=parse(dk);g.fillText(pad(p.getDate())+"."+pad(p.getMonth()+1),x0+W0+CW*i+CW/2,y0+HH/2)});
+  ROWS.forEach(function(r,ri){
+    var y=y0+HH+RH*ri;
+    g.textAlign="left";g.fillStyle="#111111";g.font="600 17px "+F;g.fillText(r[1],x0+12,y+21);
+    g.fillStyle="#555555";g.font="400 13px "+F;g.fillText(r[2],x0+12,y+41);
+    g.textAlign="center";g.fillStyle="#111111";g.font="500 18px "+F;
+    meas.dates.forEach(function(dk,i){var v=meas.v[dk]&&meas.v[dk][r[0]];if(v)g.fillText(String(v),x0+W0+CW*i+CW/2,y+RH/2)});
+  });
+  g.strokeStyle="#444444";g.lineWidth=1;g.beginPath();
+  var i;for(i=0;i<=ROWS.length;i++){var yy=Math.round(y0+HH+RH*i)+.5;g.moveTo(x0,yy);g.lineTo(x0+tw,yy)}
+  for(i=0;i<=n;i++){var xx=Math.round(x0+W0+CW*i)+.5;g.moveTo(xx,y0);g.lineTo(xx,y0+th)}
+  g.stroke();g.lineWidth=1.5;g.strokeRect(x0+.5,y0+.5,tw,th);
+  return c;
+}
+function dataBytes(url){var b=atob(url.split(",")[1]),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u}
+function pdfFromJpeg(jpg,iw,ih){
+  var land=iw>=ih,PW=land?841.89:595.28,PH=land?595.28:841.89,m=28;
+  var k=Math.min((PW-2*m)/iw,(PH-2*m)/ih),w=iw*k,h=ih*k,x=(PW-w)/2,y=PH-m-h;
+  var content="q "+w.toFixed(2)+" 0 0 "+h.toFixed(2)+" "+x.toFixed(2)+" "+y.toFixed(2)+" cm /Im0 Do Q";
+  function enc(t){var u=new Uint8Array(t.length);for(var i=0;i<t.length;i++)u[i]=t.charCodeAt(i)&255;return u}
+  var parts=[],off=0,xref=[];
+  function put(u){parts.push(u);off+=u.length}
+  function obj(nm,body,bin){xref[nm]=off;put(enc(nm+" 0 obj\n"+body));if(bin){put(enc("\nstream\n"));put(bin);put(enc("\nendstream"))}put(enc("\nendobj\n"))}
+  put(enc("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"));
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+  obj(2,"<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+PW+" "+PH+"] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>");
+  obj(4,"<< /Type /XObject /Subtype /Image /Width "+iw+" /Height "+ih+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+jpg.length+" >>",jpg);
+  obj(5,"<< /Length "+content.length+" >>",enc(content));
+  var start=off,t="xref\n0 6\n0000000000 65535 f \n";
+  for(var i=1;i<=5;i++)t+=("0000000000"+xref[i]).slice(-10)+" 00000 n \n";
+  put(enc(t+"trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n"+start+"\n%%EOF\n"));
+  var out=new Uint8Array(off),p=0;parts.forEach(function(u){out.set(u,p);p+=u.length});return out;
+}
+function exportMeas(kind){
+  try{
+    var c=measCanvas(),bytes,type,name="zamery-"+key(new Date())+"."+kind;
+    if(kind==="png"){bytes=dataBytes(c.toDataURL("image/png"));type="image/png"}
+    else{bytes=pdfFromJpeg(dataBytes(c.toDataURL("image/jpeg",0.93)),c.width,c.height);type="application/pdf"}
+    var blob=new Blob([bytes],{type:type});
+    function download(){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href)},60000)}
+    var file=null;try{file=new File([blob],name,{type:type})}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file]}).catch(function(e){if(!e||e.name!=="AbortError")download()});
+    }else download();
+  }catch(e){setStatus("Не получилось выгрузить замеры. Попробуйте ещё раз.",true)}
+}
 function curCol(){ var t=key(new Date()), best=null; meas.dates.forEach(function(x){ if(x<=t) best=x }); return best||meas.dates[0] }
 function renderMeas(){
   var root=document.getElementById("view-meas"); root.textContent="";
@@ -350,6 +414,9 @@ function renderMeas(){
     h("h1",{text:"Замеры по воскресеньям"}),
     h("p",{class:"hint",text:"Вес в килограммах, остальное в сантиметрах. Выделен столбец последнего воскресенья."}),
     tw,
+    h("div",{class:"btnrow"},[
+      h("button",{class:"btn",text:"Сохранить PNG",onclick:function(){exportMeas("png")}}),
+      h("button",{class:"btn",text:"Сохранить PDF",onclick:function(){exportMeas("pdf")}})]),
     h("button",{class:"btn",text:"Добавить следующее воскресенье",onclick:function(){var last=parse(meas.dates[meas.dates.length-1]);meas.dates.push(key(addDays(last,7)));saveMeas();renderMeas();var w=document.querySelector(".tablewrap");w.scrollLeft=w.scrollWidth}})
   ]);
   root.appendChild(wrap);
@@ -430,7 +497,7 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-var APP_VERSION="7";
+var APP_VERSION="8";
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
 var lastCheck=0;
 function checkVersion(){
