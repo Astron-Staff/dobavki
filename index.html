@@ -124,6 +124,8 @@ tr:last-child th,tr:last-child td{border-bottom:0}
 /* Liquid Glass layer */
 body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   background:radial-gradient(60% 38% at 12% 4%,var(--glow1),transparent 70%),radial-gradient(55% 34% at 96% 30%,var(--glow2),transparent 70%),radial-gradient(60% 36% at 20% 96%,var(--glow2),transparent 70%)}
+/* the glow fades to the plain background at the top, so it meets the status bar without a visible edge */
+body::before{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 180px);mask-image:linear-gradient(to bottom,transparent 0,#000 180px)}
 .tabs,.summary,.list,.info,.tablewrap,.btn,.nav,.foot,.week button.sel{
   background:var(--surface);border:1px solid var(--edge);
   -webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
@@ -428,7 +430,7 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-var APP_VERSION="6";
+var APP_VERSION="7";
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
 var lastCheck=0;
 function checkVersion(){
