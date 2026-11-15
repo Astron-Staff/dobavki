@@ -321,11 +321,10 @@ function renderDay(){
   ]));
 
   PLAN.forEach(function(g){
-    if(g.train&&!d.train) return;
     var list=h("div",{class:"list"});
     g.items.forEach(function(it){
       var on=!!d.t[it.id];
-      function toggle(){ if(d.t[it.id])delete d.t[it.id]; else d.t[it.id]=true; saveDay(k); renderDay() }
+      function toggle(){ if(d.t[it.id])delete d.t[it.id]; else { d.t[it.id]=true; if(g.train)d.train=true } saveDay(k); renderDay() }
       var cb=h("button",{class:"check",role:"checkbox","aria-checked":on?"true":"false","aria-label":it.name,onclick:toggle}); cb.innerHTML=CHECK;
       var inp=h("input",{class:"amt",id:"amt-"+it.id,type:"text","aria-label":"Количество: "+it.name,autocomplete:"off"});
       inp.value=d.a[it.id]!=null?d.a[it.id]:it.amt;
@@ -334,7 +333,7 @@ function renderDay(){
         h("button",{class:"label","aria-expanded":openIds[it.id]?"true":"false","aria-controls":"more-"+it.id,onclick:function(){openIds[it.id]=!openIds[it.id];renderDay()}},[h("span",{class:"nm",text:it.name}),h("span",{class:"nt",text:(it.opt?"По желанию: ":"")+it.note}),h("span",{class:"tg",text:openIds[it.id]?"Скрыть":"Как принимать"})]),inp,
         h("div",{class:"more",id:"more-"+it.id,hidden:openIds[it.id]?null:""},[h("p",{text:it.how}), it.coach?(function(){var q=h("q");q.appendChild(h("b",{text:"Тренер: "}));q.appendChild(document.createTextNode("«"+it.coach+"»"));return q})():null])]));
     });
-    wrap.appendChild(h("section",{class:"group"},[h("h2",{text:g.title}),g.desc?h("p",{class:"desc",text:g.desc}):null,list,g.foot?h("p",{class:"foot",text:g.foot}):null]));
+    wrap.appendChild(h("section",{class:"group"},[h("h2",{text:g.title}),g.desc?h("p",{class:"desc",text:(g.train&&!d.train?"Только в дни тренировок: отметьте любой пункт, и день посчитается тренировочным. ":"")+g.desc}):null,list,g.foot?h("p",{class:"foot",text:g.foot}):null]));
   });
   wrap.appendChild(h("p",{class:"hint",text:"Квадрат слева отмечает приём. Нажатие на название открывает, как принимать. В поле справа можно вписать, сколько приняли на самом деле."}));
   root.appendChild(wrap);
@@ -576,7 +575,7 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-var APP_VERSION="9";
+var APP_VERSION="10";
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
 var lastCheck=0;
 function checkVersion(){
