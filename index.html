@@ -192,6 +192,11 @@ td input{font-weight:500}
 .acc>*:last-child{margin-bottom:14px}
 .info.flat{background:none;border:0;box-shadow:none;padding:0;border-radius:0;-webkit-backdrop-filter:none;backdrop-filter:none}
 .plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:8px;font-size:15px}
+#shop .ing li.grp{display:block;border-top:0;padding:12px 0 2px;font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+#shop .ing li.grp:first-child{padding-top:2px}
+#shop .ing li.grp+li{border-top:0}
+.shop-x{display:block;font-size:13px;color:var(--muted);margin-top:1px}
+#shop .chips{margin:2px 0 4px}
 </style>
 </head>
 <body>
@@ -514,13 +519,71 @@ var T_RULES=["Сон 7–8 часов.","Завтрак в течение час
 var T_TRAIN=["Для наилучшего эффекта тренировки важно начинать не ранее 6:00 и заканчивать не позднее 23:00. В этот день можно съесть больше, если хочется.","Утро (с 8:00 до 11:00): обычный сбалансированный приём пищи. Не подстраивать питание под тренировки. Идеально подходят блюда, содержащие яичные белки, мясо, птица или рыба с овощами, или протеиновый коктейль.","За 4 часа до сна: только некрахмалистые овощи и любой белок (рыба, курица или индейка, яичные белки). Также можно выпить протеиновый коктейль. После тренировки обязательно кушать (высокобелковый приём).","Позднее чем за 2 часа до сна есть не рекомендуется. Во время сна мышцы восстанавливаются не хуже, чем от приёма пищи."];
 var T_CATS=[{"t":"1. Белки","n":"Белки — основной строительный материал в нашем организме.","g":[["Яйца","Цельные куриные, перепелиные. 1 куриное = 4 перепелиных."],["Мясо и птица","Куриные грудка, желудки, печень. Индейка: грудка, желудки, сердце. Говядина: лопатка, спинная часть (толстый край), филей, оковалок, огузок, кострец, печень, сердце. Свинина: нежирная вырезка, печень, сердце. Дичь: лосятина, мясо кабана, конина."],["Рыба","Треска, минтай, хек, сайда, путассу, палтус, судак, щука, камбала, окунь, тилапия, налим, карп, пикша, дорадо, сибас, тунец, ставрида, сом, горбуша, кета, форель радужная или речная."],["Жирная рыба","Скумбрия, осётр, нерка, лосось, сёмга, атлантическая форель используются 2 раза в неделю, при этом исключаются другие жирные продукты из этого приёма пищи."],["Морепродукты и консервы","Креветки, мидии, кальмар, осьминог, устрицы, краб, рак. Консервы: тунец, кета, горбуша, кальмар, мидии, без масла."],["Творог","В брикетах, зернёный без сливок, паста, рассыпчатый, без добавок, жирность до 5%."],["Йогурт","Густой или питьевой, желательно с высоким содержанием белка, обязательно без добавок, жирность до 5%. Греческий, Эко Греко, YoPro, Danone и т. д."],["Кефир","Кефир, ряженка жирностью до 3,2%, Exponenta 1 упаковка 250 мл."]]},{"t":"2. Углеводы","n":"Основной источник энергии. Ограничение углеводов во время снижения веса приводит к срывам.","g":[["Крупы и макароны","Гречка, овсяные хлопья, геркулес, перловка, рис, булгур, киноа, пшеничная крупа, пшённая крупа, ячневая крупа, кукурузная крупа, кускус, полба. Фасоль красная и белая не консервированная, чечевица, нут, горох. Макароны, листы для лазаньи из твёрдых сортов пшеницы."],["Хлебцы","Любые без добавок, несладкие. Dr. Körner, Полоцкие, «Хлебцы-молодцы» и др."],["Сухофрукты","Чернослив, курага, инжир; сушёные фрукты и ягоды без сахара."],["Фрукты и ягоды","Яблоко, груша, нектарин, абрикос, персик, слива, хурма, лимон, лайм, грейпфрут, апельсин, помело, мандарин, манго, дыня, маракуйя, гранат, папайя, личи. Клубника, клюква, черника, земляника, голубика, киви, алыча, крыжовник, брусника, ежевика, облепиха, малина, вишня, черешня, морошка. Детское фруктовое пюре."]]},{"t":"3. Жиры","n":"Жиры необходимы организму для множества важных процессов. При снижении веса жиры должны поступать с пищей.","g":[["Растительное масло","Любое: подсолнечное, оливковое, рапсовое, виноградное, кунжутное, кедровое, льняное, конопляное."],["Сливочное масло","Без добавок, жирность 82,5%."],["Орехи и семечки","Любые: арахис, миндаль, кешью, фундук, грецкий орех, кедровый орех, кокосовая стружка, кокос, семена чиа, семена подсолнечника, семена тыквы. Арахисовая паста, урбеч без сахара."],["Сыр","Российский, голландский, радомер, джюгас, пармезан, пошехонский, адыгейский, моцарелла, фета, филадельфия, камамбер, бри, дор блю. Твёрдые, мягкие, рассольные, творожные, копчёные, сливочные, плавленые."],["Авокадо","Все сорта."]]},{"t":"4. Овощи","n":"Овощи необходимы для хорошего пищеварения, снижают аппетит и дают витамины и минералы. Часть можно без ограничений, часть нужно контролировать.","g":[["Зелёные","Брокколи, капуста цветная, пекинская, белокочанная, спаржа, зелень, сельдерей, петрушка, укроп, щавель, все виды лиственного салата, цукини, огурцы, лук (зелёный, репчатый), шпинат, фасоль стручковая, перец зелёный сладкий и острый. Морская капуста без масла и добавок."],["Красные","Редис, красный сладкий и острый перец, томаты, томаты черри, красные листовые салаты, красный репчатый лук. Красная свёкла: до 150 г в день, 1–2 раза в неделю."],["Жёлтые","Жёлтые томаты, перец острый и сладкий, кабачки, репа, патиссоны, морковь."],["Другие овощи","Чеснок, редька, баклажаны, грибы любые. Тыква, морковь, свёкла: до 150 г в день, 1–2 раза в неделю."],["Овощные смеси","Любые смеси без картофеля и риса. Допускаются смеси с небольшим содержанием зелёного горошка, красной фасоли, моркови и кукурузы."],["Маринованные овощи","Имбирь, оливки, маслины: до 50 г в день для вкуса."]]},{"t":"Добавки к пище","n":"Чем вкуснее и разнообразнее ваш рацион, тем легче будет снижать вес.","g":[["Специи","Соль, перец, сушёный чеснок, укроп, петрушка, куркума, кумин, барбарис, паприка, а также другие натуральные специи и их комбинации: до 3–5 г в день."],["Соусы","Горчица, хрен, соевый, устричный, рыбный соусы, терияки, барбекю, кетчуп, томатная паста, сок лимона, уксус бальзамический: до 1–2 чайных ложек в день."],["Добавки","Мука, сода, желатин, разрыхлитель, дрожжи, ванилин, лимонная кислота, какао (натуральное, без сахара), жидкий дым: до 1–2 чайных ложек при необходимости."],["Сахарозаменители","Стевия, Fit Parad, эритрит, ксилит, аспартам, Novasweet, сусли. Джемы, сиропы и топпинги без углеводов в составе: до 1–2 чайных ложек при необходимости. Жевательные резинки со вкусами (без сахара)."]]},{"t":"Вода и напитки","n":"Питьевой режим напрямую влияет на снижение веса. Выпивайте 1,5–2 литра чистой воды в день.","g":[["Чай","Чёрный, зелёный, травяной, каркаде."],["Кофе","Растворимый, молотый, цикорий."],["Молоко","Коровье, козье, овсяное, соевое: до 50 мл в день, в блюда и напитки (каши, омлеты, кофе, чай)."]]}];
 var UIK="dobavki-ui",ui={prof:0,menu:0};
-try{var u0=JSON.parse(localStorage.getItem(UIK)||"null");if(u0){ui.prof=u0.prof===1?1:0;ui.menu=(u0.menu>=0&&u0.menu<MENUS.length)?u0.menu:0}}catch(e){}
+try{var u0=JSON.parse(localStorage.getItem(UIK)||"null");if(u0){ui.prof=u0.prof===1?1:0;ui.menu=(u0.menu>=0&&u0.menu<MENUS.length)?u0.menu:0;ui.days=[1,3,7].indexOf(u0.days)>-1?u0.days:1;ui.both=!!u0.both}}catch(e){}
 function saveUi(){try{localStorage.setItem(UIK,JSON.stringify(ui))}catch(e){}}
 function r0(x){return Math.round(x)}
 function macro(id,g){var f=FOODS[id];return {k:f[1]*g/100,p:f[2]*g/100,f:f[3]*g/100,c:f[4]*g/100}}
 function kbLine(t){return r0(t.k)+" ккал · Б "+r0(t.p)+" · Ж "+r0(t.f)+" · У "+r0(t.c)}
 function per100(a){return r0(a[1])+" ккал · Б "+r0(a[2])+" · Ж "+r0(a[3])+" · У "+r0(a[4])}
 function acc(title,kids,open){var dt=h("details",{class:"acc"},[h("summary",{text:title})].concat(kids));if(open)dt.open=true;return dt}
+
+var PACK={curd1:[340,["пачка","пачки","пачек"],"по 340 г"],greek:[230,["банка","банки","банок"],"по 230 г"],milk:[900,["бутылка","бутылки","бутылок"],"по 900 мл"],
+ buck:[900,["пачка","пачки","пачек"],"по 900 г"],rice:[800,["пачка","пачки","пачек"],"по 800 г"],bread:[350,["буханка","буханки","буханок"],"по 350 г"],
+ cheeseL:[200,["пачка","пачки","пачек"],"по 200 г"],tuna:[130,["банка","банки","банок"],"по 185 г"],gorb:[160,["банка","банки","банок"],"по 245 г"],
+ vegmix:[400,["пачка","пачки","пачек"],"по 400 г"],kefir:[900,["пачка","пачки","пачек"],"по 900 мл"],curd:[180,["пачка","пачки","пачек"],"по 180 г"]};
+var SHOP_NOTE={whey:"из вашей банки",oil:"подсолнечное или оливковое"};
+var SHOP_CAT=[["Мясо, рыба, яйца",["chick","liver","pollock","gorb","tuna","egg"]],["Молочное",["curd1","curd","greek","kefir","milk","cheeseL","cheese","butter"]],
+ ["Крупы и хлеб",["buck","rice","oats","pasta","bread","crisp"]],["Овощи и фрукты",["veg","vegmix","apple","mand","nect","pers","kuraga"]],["Другое",["peanut","oil","whey"]]];
+function plural(n,f){var a=n%10,b=n%100;return f[(a===1&&b!==11)?0:(a>=2&&a<=4&&(b<10||b>=20))?1:2]}
+function fmtW(g,ml){var u=ml?"мл":"г",U=ml?"л":"кг";if(g>=1000)return (Math.round(g/100)/10).toString().replace(".",",")+" "+U;return Math.ceil(g/10)*10+" "+u}
+function shopRows(M,profs,days){
+  var tot={},order=[];
+  M.m.forEach(function(meal){meal.i.forEach(function(it){
+    var g=0;profs.forEach(function(p){g+=it[1+p]});
+    if(!(it[0] in tot)){tot[it[0]]=0;order.push(it[0])}
+    tot[it[0]]+=g*days;
+  })});
+  var cost=0,priced=true;
+  var rows=order.map(function(id){
+    var g=tot[id],name=FOODS[id][0].replace(/, сырая$|, сырой$|, сухие$|, сухая$|, сухой$/,""),q,extra="";
+    if(PRICE[id]!=null)cost+=PRICE[id]*g/100;else if(id!=="oil"&&id!=="tuna")priced=false;
+    if(id==="egg"){var n=Math.ceil(g/55);q=n+" шт";extra=Math.ceil(n/10)+" "+plural(Math.ceil(n/10),["десяток","десятка","десятков"])}
+    else if(id==="oil"){q=fmtW(g/0.92,true)}
+    else if(id==="tuna"){q=fmtW(g)+" без жидкости"}
+    else{q=fmtW(g,id==="milk"||id==="kefir")}
+    if(PACK[id]){var k=Math.ceil(g/PACK[id][0]-0.05);if(k<1)k=1;extra=k+" "+plural(k,PACK[id][1])+" "+PACK[id][2]}
+    if(SHOP_NOTE[id])extra=SHOP_NOTE[id];
+    return [name,q,extra,id];
+  });
+  var sorted=[];
+  SHOP_CAT.forEach(function(c){var part=rows.filter(function(r){return c[1].indexOf(r[3])>-1});if(part.length){sorted.push([c[0]]);sorted=sorted.concat(part)}});
+  rows.forEach(function(r){if(!SHOP_CAT.some(function(c){return c[1].indexOf(r[3])>-1}))sorted.push(r)});
+  rows=sorted;
+  return {rows:rows,cost:cost,priced:priced};
+}
+function shopText(M,res,label){
+  var t=["Список покупок: "+M.t,label,""];
+  res.rows.forEach(function(r){if(r.length===1)t.push((t.length>3?"\n":"")+r[0]+":");else t.push("• "+r[0]+" — "+r[1]+(r[2]?" ("+r[2]+")":""))});
+  return t.join("\n");
+}
+function renderShop(M){
+  var both=!!ui.both,days=ui.days||1,profs=both?[0,1]:[ui.prof];
+  var res=shopRows(M,profs,days);
+  var label=(days===1?"на 1 день":"на "+days+" "+plural(days,["день","дня","дней"]))+(both?", на двоих (2200 + 2500 ккал)":", "+PROF[ui.prof].l);
+  var dchips=h("div",{class:"chips"});
+  [1,3,7].forEach(function(d){dchips.appendChild(h("button",{"aria-pressed":d===days?"true":"false",text:d===1?"1 день":d+" "+plural(d,["день","дня","дней"]),onclick:function(){ui.days=d;saveUi();renderFood();var e=document.getElementById("shop");if(e)e.scrollIntoView({block:"start"})}}))});
+  dchips.appendChild(h("button",{"aria-pressed":both?"true":"false",text:"На двоих",onclick:function(){ui.both=!both;saveUi();renderFood();var e=document.getElementById("shop");if(e)e.scrollIntoView({block:"start"})}}));
+  var ul=h("ul",{class:"ing"});
+  res.rows.forEach(function(r){if(r.length===1){ul.appendChild(h("li",{class:"grp",text:r[0]}));return}ul.appendChild(h("li",{},[h("span",{},[document.createTextNode(r[0]),r[2]?h("small",{class:"shop-x",text:r[2]}):null]),h("b",{text:r[1]})]))});
+  var hasTuna=res.rows.some(function(r){return r[3]==="tuna"});
+  return h("div",{class:"qa",id:"shop"},[
+    h("label",{text:"Список покупок"}),
+    h("p",{class:"qtext",text:"Для меню «"+M.t+"», "+label+". Крупы и мясо в сыром весе, вес округлён вверх."}),
+    dchips,ul,
+    res.priced?h("p",{class:"qtext",text:"Примерно "+res.cost.toFixed(2).replace(".",",")+" р. за этот вес (не за целые пачки) по ценам из ваших заказов в Евроопте"+(hasTuna?", без масла и тунца":", без масла")+"."}):null,
+    h("button",{class:"btn",text:"Скопировать список",onclick:function(){copyText(shopText(M,res,label))}})
+  ]);
+}
 function renderFood(){
   var root=document.getElementById("view-food");root.textContent="";
   var P=PROF[ui.prof],wrap=h("div",{style:"display:flex;flex-direction:column;gap:14px"});
@@ -560,6 +623,7 @@ function renderFood(){
   box.appendChild(h("div",{class:"foot",style:"margin:0"},[
     h("b",{text:"Итого за день: "+kbLine(day)}),h("span",{style:"display:block;margin-top:4px",text:"Цель: "+P.k+" ккал · Б "+P.p+" · Ж "+P.f+" · У "+P.c}),
     priced?h("span",{style:"display:block;margin-top:4px",text:"Примерно "+cost.toFixed(2).replace(".",",")+" р. в день по ценам из ваших заказов в Евроопте"+(JSON.stringify(M).indexOf('"tuna"')>-1?", без масла и тунца":", без масла")}):null]));
+  box.appendChild(renderShop(M));
   sec.appendChild(box);wrap.appendChild(sec);
   wrap.appendChild(h("p",{class:"hint",text:"Меню составлено в чате с Claude по списку продуктов тренера, это не меню от тренера. Цифры примерные: сверяйте с упаковкой и FatSecret. Овощи можно менять на любые из списка, фрукты и хлебцы съедайте до 20:00."}));
   wrap.appendChild(h("div",{class:"qa"},[h("label",{text:"Если пьёте протеин или гейнер"}),
@@ -689,7 +753,7 @@ renderDay();
     clearTimeout(timer); ready("Отметки сохраняются автоматически");
   }catch(e){ clearTimeout(timer); db=null; useLocal() }
 })();
-var APP_VERSION="13";
+var APP_VERSION="14";
 if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").then(function(r){document.addEventListener("visibilitychange",function(){if(!document.hidden)r.update().catch(function(){})})}).catch(function(){})}
 var lastCheck=0;
 function checkVersion(){
